@@ -46,6 +46,7 @@ const useBreeds = () => {
         selectedSubBreed,
         setSelectedSubBreed,
         breedImages,
+        setBreedImages,
         fetchBreedImages,
         imgNumber,
         setImgNumber,

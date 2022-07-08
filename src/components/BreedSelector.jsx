@@ -15,6 +15,7 @@ const BreedSelector = () => {
         setImgNumber,
         imgNumber,
         breedImages,
+        setBreedImages,
         allBreeds,
         fetchBreedImages,
     } = useBreeds();
@@ -33,7 +34,7 @@ const BreedSelector = () => {
             newValidation.push("sub-breed");
         }
 
-        if (imgNumber === 0) {
+        if (imgNumber == 0 || !imgNumber) {
             newValidation.push("img-number");
         }
 
@@ -44,6 +45,7 @@ const BreedSelector = () => {
             party.confetti(partyRef.current);
             fetchBreedImages();
         } else {
+            setBreedImages([]);
             setValidationMessages(newValidation);
         }
     }, [selectedBreed, selectedSubBreed, imgNumber, partyRef]);
