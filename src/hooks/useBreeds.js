@@ -12,6 +12,11 @@ const useBreeds = () => {
         fetchAllBreeds();
     }, []);
 
+    // clear out the selected sub breed on change of the breed
+    useEffect(() => {
+        setSelectedSubBreed(undefined);
+    }, [selectedBreed]);
+
     const fetchAllBreeds = async () => {
         await axios
             .get("https://dog.ceo/api/breeds/list/all")
@@ -22,7 +27,7 @@ const useBreeds = () => {
     };
 
     const fetchBreedImages = async () => {
-        const subBreedSlug = setSelectedBreed ? "/" + selectedSubBreed : "";
+        const subBreedSlug = selectedSubBreed ? "/" + selectedSubBreed : "";
 
         console.log({ selectedBreed, subBreedSlug, imgNumber });
 

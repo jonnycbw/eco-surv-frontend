@@ -1,8 +1,10 @@
 /* eslint-disable no-fallthrough */
 import useBreeds from "../hooks/useBreeds";
 import ImageGrid from "./ImageGrid";
-import { get } from "lodash";
-import { useState } from "react";
+import { get, isEmpty } from "lodash";
+import { useState, useCallback, useRef } from "react";
+import party from "party-js";
+import { useEffect } from "react";
 
 const BreedSelector = () => {
     const {
@@ -18,39 +20,47 @@ const BreedSelector = () => {
     } = useBreeds();
 
     const [validationMessages, setValidationMessages] = useState([]);
+    const partyRef = useRef();
 
-    const validateAndFetch = () => {
-        switch (true) {
-            case !selectedBreed:
-                validationMessages.push("Breed");
-                setValidationMessages(validationMessages);
+    const validateAndFetch = useCallback(() => {
+        const newValidation = [];
 
-            case Object?.keys(allBreeds).length > 0 && !selectedSubBreed:
-                validationMessages.push("Sub-Breed");
-
-                setValidationMessages(validationMessages);
-
-            case !imgNumber || imgNumber == 0:
-                validationMessages.push("Number of images");
-
-            default:
+        if (isEmpty(selectedBreed)) {
+            newValidation.push("breed");
         }
 
-        if (validationMessages?.length < 1) {
+        if (selectedBreed && get(allBreeds, selectedBreed, []).length > 0 && !selectedSubBreed) {
+            newValidation.push("sub-breed");
+        }
+
+        if (imgNumber === 0) {
+            newValidation.push("img-number");
+        }
+
+        if (newValidation?.length < 1) {
+            // reset the validation
+            setValidationMessages([]);
+            // nice surrpise to show a success
+            party.confetti(partyRef.current);
             fetchBreedImages();
         } else {
-            setValidationMessages(validationMessages);
+            setValidationMessages(newValidation);
         }
-    };
+    }, [selectedBreed, selectedSubBreed, imgNumber, partyRef]);
+
+    useEffect(() => {
+        console.log({ validationMessages });
+    }, [validationMessages]);
 
     return (
         <>
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", flexWrap: "wrap" }}>
                 <select
                     onChange={(e) => {
                         setSelectedBreed(e.target.value);
                     }}
                     value={selectedBreed}
+                    style={{ border: validationMessages?.includes("breed") ? "solid red 1px" : "solid 1px black" }}
                 >
                     <option value=""> Select a breed</option>
                     {Object?.keys(allBreeds)?.map((breed) => {
@@ -69,6 +79,7 @@ const BreedSelector = () => {
                                 setSelectedSubBreed(e.target.value);
                             }}
                             value={selectedSubBreed}
+                            style={{ border: validationMessages?.includes("sub-breed") ? "solid red 1px" : "solid 1px black" }}
                         >
                             <option value=""> Select a Sub-breed</option>
                             {get(allBreeds, selectedBreed, []).map((breed) => {
@@ -87,6 +98,7 @@ const BreedSelector = () => {
                         setImgNumber(e.target.value);
                     }}
                     value={imgNumber}
+                    style={{ border: validationMessages?.includes("img-number") ? "solid red 1px" : "solid 1px black" }}
                 >
                     {Array.from(Array(10).keys()).map((number) => {
                         return (
@@ -97,15 +109,15 @@ const BreedSelector = () => {
                     })}
                 </select>
 
-                <button type="button" onClick={validateAndFetch}>
+                <button
+                    ref={partyRef}
+                    type="button"
+                    style={{ background: "#7f8c8d", color: "white", border: "none", cursor: "pointer" }}
+                    onClick={() => validateAndFetch()}
+                >
                     View Images
                 </button>
             </div>
-
-            {validationMessages?.map((field) => {
-                console.log({ field });
-                return <div key={field}>{field} - field must be selected</div>;
-            })}
 
             <div style={{ marginTop: "50px" }}>
                 <ImageGrid images={breedImages} />
